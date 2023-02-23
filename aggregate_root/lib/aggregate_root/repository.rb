@@ -12,6 +12,14 @@ module AggregateRoot
       aggregate
     end
 
+    def load_custom(aggregate, stream_name, to: nil, older_than: nil)
+      stream = event_store.read.stream(stream_name)
+      stream = stream.to(to) if to
+      stream = stream.older_than(older_than) if older_than
+      aggregate.version = aggregate.unpublished_events.count - 1
+      aggregate
+    end
+
     def store(aggregate, stream_name)
       event_store.publish(
         aggregate.unpublished_events.to_a,
